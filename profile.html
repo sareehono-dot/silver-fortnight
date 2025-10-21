@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SnapShare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0095f6, #ff006b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .main-content {
+            margin-top: 70px;
+            padding: 20px 0;
+        }
+        
+        .profile-container {
+            max-width: 935px;
+            margin: 0 auto;
+        }
+        
+        .profile-header {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 100px;
+            margin-bottom: 24px;
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 60px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            color: #262626;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #8e8e8e;
+            text-transform: lowercase;
+        }
+        
+        .profile-details {
+            margin-left: 250px;
+        }
+        
+        .profile-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .profile-name h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #262626;
+        }
+        
+        .verified-badge {
+            background: #0095f6;
+            color: #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .profile-bio {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #262626;
+            margin-bottom: 16px;
+        }
+        
+        .edit-profile-btn {
+            background: #efefef;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .edit-profile-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .content-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 16px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #8e8e8e;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab-button.active {
+            color: #262626;
+            border-bottom-color: #262626;
+        }
+        
+        .tab-button:hover {
+            color: #262626;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        .grid-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .grid-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .grid-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .grid-item:hover .grid-overlay {
+            opacity: 1;
+        }
+        
+        .overlay-likes, .overlay-comments {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .edit-modal {
+            width: 500px;
+            max-height: 600px;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .modal-header h3 {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8e8e8e;
+        }
+        
+        .modal-content {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #0095f6;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding: 20px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-btn-secondary {
+            background: #efefef;
+            border: none;
+            color: #262626;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .modal-btn-primary {
+            background: #0095f6;
+            border: none;
+            color: #fff;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #0077cc;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e5e5e5;
+            padding: 12px 0;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .bottom-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #262626;
+            font-size: 12px;
+        }
+        
+        .bottom-nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 0 80px;
+            }
+            
+            .profile-header {
+                padding: 20px;
+            }
+            
+            .profile-info {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .profile-stats {
+                gap: 40px;
+            }
+            
+            .profile-details {
+                margin-left: 0;
+                text-align: center;
+            }
+            
+            .content-grid {
+                gap: 16px;
+            }
+            
+            .bottom-nav {
+                display: block;
+            }
+            
+            .edit-modal {
+                width: 90vw;
+                margin: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .content-tabs {
+                gap: 30px;
+            }
+            
+            .profile-stats {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="logo">SnapShare</div>
+            
+            <div class="hidden md:block">
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-icon">💬</div>
+                <div class="nav-icon">➕</div>
+                <div class="nav-icon">🧭</div>
+                <img src="/resources/images/avatars/avatar1.png" alt="Profile" class="w-8 h-8 rounded-full cursor-pointer">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-info">
+                    <img src="/resources/images/avatars/avatar1.png" alt="Alex Chen" class="profile-avatar">
+                    
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span class="stat-number">234</span>
+                            <span class="stat-label">posts</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">1.2K</span>
+                            <span class="stat-label">followers</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">890</span>
+                            <span class="stat-label">following</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-name">
+                        <h2>Alex Chen</h2>
+                        <div class="verified-badge">✓</div>
+                    </div>
+                    <p class="profile-bio">Photographer 📸 | Travel enthusiast ✈️ | Coffee lover ☕</p>
+                    <button class="edit-profile-btn" onclick="showEditModal()">Edit Profile</button>
+                </div>
+            </div>
+            
+            <!-- Content Tabs -->
+            <div class="content-tabs">
+                <button class="tab-button active" data-tab="posts">Posts</button>
+                <button class="tab-button" data-tab="saved">Saved</button>
+                <button class="tab-button" data-tab="tagged">Tagged</button>
+            </div>
+            
+            <!-- Content Grid -->
+            <div class="content-grid" id="posts-grid">
+                <!-- Posts will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal-overlay" style="display: none;">
+        <div class="modal edit-modal">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <button class="close-modal" onclick="hideEditModal()">&times;</button>
+            </div>
+            
+            <div class="modal-content">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" value="Alex Chen" id="editName">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" value="alex_photography" id="editUsername">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <textarea class="form-input form-textarea" id="editBio">Photographer 📸 | Travel enthusiast ✈️ | Coffee lover ☕</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="text" class="form-input" placeholder="Add a website" id="editWebsite">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" value="alex@example.com" id="editEmail">
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="hideEditModal()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="index.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🏠</div>
+                <span>Home</span>
+            </a>
+            <a href="messages.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">💬</div>
+                <span>Messages</span>
+            </a>
+            <a href="upload.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">➕</div>
+                <span>Create</span>
+            </a>
+            <a href="profile.html" class="bottom-nav-item" style="color: #0095f6;">
+                <div class="bottom-nav-icon">👤</div>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+    
+    <script>
+        // Profile page specific functions
+        function showEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'flex';
+            
+            anime({
+                targets: modal,
+                opacity: [0, 1],
+                duration: 200,
+                easing: 'easeOutQuart'
+            });
+            
+            anime({
+                targets: modal.querySelector('.modal'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutBack'
+            });
+        }
+        
+        function hideEditModal() {
+            const modal = document.getElementById('editModal');
+            
+            anime({
+                targets: modal,
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuart',
+                complete: () => {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        function saveProfile() {
+            const name = document.getElementById('editName').value;
+            const username = document.getElementById('editUsername').value;
+            const bio = document.getElementById('editBio').value;
+            
+            // Update profile display
+            document.querySelector('.profile-name h2').textContent = name;
+            document.querySelector('.profile-bio').textContent = bio;
+            
+            // Show success message
+            if (window.snapShare) {
+                window.snapShare.showToast('Profile updated successfully!');
+            }
+            
+            hideEditModal();
+        }
+        
+        // Tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Load content based on tab
+                    const tab = this.dataset.tab;
+                    loadTabContent(tab);
+                });
+            });
+            
+            // Load initial content
+            loadTabContent('posts');
+        });
+        
+        function loadTabContent(tab) {
+            const grid = document.getElementById('posts-grid');
+            
+            if (tab === 'posts') {
+                // Load user's posts
+                if (window.posts) {
+                    const userPosts = window.posts.filter(post => post.userId === 1);
+                    grid.innerHTML = userPosts.map(post => `
+                        <div class="grid-item" data-post-id="${post.id}">
+                            <img src="${post.image}" alt="Post" class="grid-image">
+                            <div class="grid-overlay">
+                                <span class="overlay-likes">${post.likes} ❤️</span>
+                                <span class="overlay-comments">${post.comments} 💬</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else if (tab === 'saved') {
+                // Load saved posts
+                if (window.posts) {
+                    const savedPosts = window.posts.filter(post => post.saved);
+                    grid.innerHTML = savedPosts.map(post => `
+                        <div class="grid-item" data-post-id="${post.id}">
+                            <img src="${post.image}" alt="Post" class="grid-image">
+                            <div class="grid-overlay">
+                                <span class="overlay-likes">${post.likes} ❤️</span>
+                                <span class="overlay-comments">${post.comments} 💬</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else if (tab === 'tagged') {
+                // Show placeholder for tagged posts
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #8e8e8e;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No tagged posts yet</h3>
+                        <p style="font-size: 14px;">When people tag you in photos, they'll appear here.</p>
+                    </div>
+                `;
+            }
+            
+            // Animate grid items
+            anime({
+                targets: '.grid-item',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                delay: anime.stagger(50),
+                duration: 400,
+                easing: 'easeOutQuart'
+            });
+        }
+    </script>
+</body>
+</html>

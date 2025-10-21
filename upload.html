@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload - SnapShare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0095f6, #ff006b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .main-content {
+            margin-top: 70px;
+            padding: 20px 0;
+            min-height: calc(100vh - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .upload-area {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 60px 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-zone:hover {
+            border-color: #0095f6;
+            background: #f8f9fa;
+        }
+        
+        .upload-zone.drag-over {
+            border-color: #0095f6;
+            background: #e3f2fd;
+            transform: scale(1.02);
+        }
+        
+        .upload-content {
+            pointer-events: none;
+        }
+        
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+        }
+        
+        .upload-zone h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        
+        .upload-zone p {
+            font-size: 16px;
+            color: #8e8e8e;
+            margin-bottom: 24px;
+        }
+        
+        .select-files-btn {
+            background: #0095f6;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            pointer-events: auto;
+        }
+        
+        .select-files-btn:hover {
+            background: #0077cc;
+        }
+        
+        .upload-form {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            display: flex;
+            min-height: 500px;
+        }
+        
+        .preview-section {
+            flex: 1;
+            padding: 20px;
+            border-right: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-container {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-image, .preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .form-section {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .form-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .form-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .form-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .caption-input {
+            width: 100%;
+            border: none;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 120px;
+            margin-bottom: 24px;
+            outline: none;
+        }
+        
+        .caption-input::placeholder {
+            color: #8e8e8e;
+        }
+        
+        .form-options {
+            margin-bottom: 24px;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .option-item:last-child {
+            border-bottom: none;
+        }
+        
+        .option-item label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .location-input, .tags-input {
+            border: none;
+            font-size: 14px;
+            text-align: right;
+            outline: none;
+            background: none;
+        }
+        
+        .location-input::placeholder, .tags-input::placeholder {
+            color: #8e8e8e;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+        
+        .share-button, .save-draft-button {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .share-button {
+            background: #0095f6;
+            color: #fff;
+            border: none;
+        }
+        
+        .share-button:hover {
+            background: #0077cc;
+        }
+        
+        .share-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .save-draft-button {
+            background: #efefef;
+            color: #262626;
+            border: none;
+        }
+        
+        .save-draft-button:hover {
+            background: #e0e0e0;
+        }
+        
+        .upload-progress {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            z-index: 10000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+        
+        .progress-subtext {
+            font-size: 14px;
+            color: #8e8e8e;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e5e5e5;
+            padding: 12px 0;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .bottom-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #262626;
+            font-size: 12px;
+        }
+        
+        .bottom-nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 16px 80px;
+            }
+            
+            .upload-form {
+                flex-direction: column;
+                min-height: auto;
+            }
+            
+            .preview-section {
+                border-right: none;
+                border-bottom: 1px solid #e5e5e5;
+                padding: 16px;
+            }
+            
+            .form-section {
+                padding: 16px;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+            
+            .upload-zone {
+                padding: 40px 20px;
+            }
+            
+            .bottom-nav {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .upload-zone h3 {
+                font-size: 18px;
+            }
+            
+            .upload-zone p {
+                font-size: 14px;
+            }
+            
+            .upload-icon {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="logo">SnapShare</div>
+            
+            <div class="hidden md:block">
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-icon">💬</div>
+                <div class="nav-icon">➕</div>
+                <div class="nav-icon">🧭</div>
+                <img src="/resources/images/avatars/avatar1.png" alt="Profile" class="w-8 h-8 rounded-full cursor-pointer">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="upload-container">
+            <!-- Upload Area -->
+            <div class="upload-area">
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon">📷</div>
+                        <h3>Drag photos and videos here</h3>
+                        <p>or click to select from your computer</p>
+                        <input type="file" id="file-input" accept="image/*,video/*" multiple hidden>
+                        <button class="select-files-btn">Select files</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upload Form (hidden initially) -->
+            <div class="upload-form" style="display: none;">
+                <div class="preview-section">
+                    <div class="preview-container">
+                        <img id="preview-image" class="preview-image" style="display: none;">
+                        <video id="preview-video" class="preview-video" controls style="display: none;"></video>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-header">
+                        <img src="/resources/images/avatars/avatar1.png" alt="Alex Chen" class="form-avatar">
+                        <span class="form-username">alex_photography</span>
+                    </div>
+                    
+                    <div class="form-content">
+                        <textarea class="caption-input" placeholder="Write a caption..." id="captionInput"></textarea>
+                        
+                        <div class="form-options">
+                            <div class="option-item">
+                                <label>Location</label>
+                                <input type="text" class="location-input" placeholder="Add location" id="locationInput">
+                            </div>
+                            
+                            <div class="option-item">
+                                <label>Tags</label>
+                                <input type="text" class="tags-input" placeholder="Add tags (separated by spaces)" id="tagsInput">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="share-button" id="shareButton" disabled>Share</button>
+                            <button class="save-draft-button">Save Draft</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Progress Modal -->
+    <div id="progressModal" class="upload-progress" style="display: none;">
+        <div class="progress-icon">⏳</div>
+        <div class="progress-text">Uploading your content...</div>
+        <div class="progress-subtext">Please wait a moment</div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="index.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🏠</div>
+                <span>Home</span>
+            </a>
+            <a href="messages.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">💬</div>
+                <span>Messages</span>
+            </a>
+            <a href="upload.html" class="bottom-nav-item" style="color: #0095f6;">
+                <div class="bottom-nav-icon">➕</div>
+                <span>Create</span>
+            </a>
+            <a href="profile.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">👤</div>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+    
+    <script>
+        // Upload page specific functionality
+        let selectedFile = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadZone = document.getElementById('upload-zone');
+            const fileInput = document.getElementById('file-input');
+            const selectFilesBtn = document.querySelector('.select-files-btn');
+            const shareButton = document.getElementById('shareButton');
+            const captionInput = document.getElementById('captionInput');
+            
+            // Enable share button when caption is entered
+            captionInput.addEventListener('input', function() {
+                shareButton.disabled = !this.value.trim();
+            });
+            
+            // File selection handlers
+            selectFilesBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleFileSelect(e.target.files);
+            });
+            
+            // Drag & Drop handlers
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('drag-over');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('drag-over');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('drag-over');
+                handleFileSelect(e.dataTransfer.files);
+            });
+            
+            // Share button handler
+            shareButton.addEventListener('click', shareContent);
+            
+            // Save draft handler
+            document.querySelector('.save-draft-button').addEventListener('click', saveDraft);
+        });
+        
+        function handleFileSelect(files) {
+            const file = files[0];
+            if (!file) return;
+            
+            selectedFile = file;
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                showUploadForm(e.target.result, file.type);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        function showUploadForm(dataUrl, fileType) {
+            const uploadArea = document.querySelector('.upload-area');
+            const uploadForm = document.querySelector('.upload-form');
+            
+            // Hide upload area and show form
+            uploadArea.style.display = 'none';
+            uploadForm.style.display = 'flex';
+            
+            // Show preview
+            if (fileType.startsWith('image/')) {
+                const previewImage = document.getElementById('preview-image');
+                previewImage.src = dataUrl;
+                previewImage.style.display = 'block';
+            } else if (fileType.startsWith('video/')) {
+                const previewVideo = document.getElementById('preview-video');
+                previewVideo.src = dataUrl;
+                previewVideo.style.display = 'block';
+            }
+            
+            // Animate form appearance
+            anime({
+                targets: uploadForm,
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 400,
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        function shareContent() {
+            const caption = document.getElementById('captionInput').value;
+            const location = document.getElementById('locationInput').value;
+            const tags = document.getElementById('tagsInput').value;
+            
+            // Show progress modal
+            const progressModal = document.getElementById('progressModal');
+            progressModal.style.display = 'block';
+            
+            anime({
+                targets: progressModal,
+                opacity: [0, 1],
+                scale: [0.8, 1],
+                duration: 300,
+                easing: 'easeOutBack'
+            });
+            
+            // Simulate upload process
+            setTimeout(() => {
+                // Hide progress modal
+                anime({
+                    targets: progressModal,
+                    opacity: [1, 0],
+                    scale: [1, 0.8],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => {
+                        progressModal.style.display = 'none';
+                    }
+                });
+                
+                // Show success message
+                if (window.snapShare) {
+                    window.snapShare.showToast('Post shared successfully!');
+                }
+                
+                // Reset form
+                resetForm();
+                
+                // Redirect to home page
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            }, 2000);
+        }
+        
+        function saveDraft() {
+            const caption = document.getElementById('captionInput').value;
+            
+            if (caption.trim()) {
+                if (window.snapShare) {
+                    window.snapShare.showToast('Draft saved!');
+                }
+            } else {
+                if (window.snapShare) {
+                    window.snapShare.showToast('Add a caption to save as draft');
+                }
+            }
+        }
+        
+        function resetForm() {
+            // Reset file input
+            document.getElementById('file-input').value = '';
+            
+            // Reset form fields
+            document.getElementById('captionInput').value = '';
+            document.getElementById('locationInput').value = '';
+            document.getElementById('tagsInput').value = '';
+            
+            // Hide preview elements
+            document.getElementById('preview-image').style.display = 'none';
+            document.getElementById('preview-video').style.display = 'none';
+            
+            // Show upload area and hide form
+            document.querySelector('.upload-area').style.display = 'block';
+            document.querySelector('.upload-form').style.display = 'none';
+            
+            // Disable share button
+            document.getElementById('shareButton').disabled = true;
+        }
+    </script>
+</body>
+</html>

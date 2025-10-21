@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapShare - Социальная сеть для фотографий</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0095f6, #ff006b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .search-input {
+            background: #efefef;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            width: 240px;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            background: #fff;
+            box-shadow: 0 0 0 1px #0095f6;
+            outline: none;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .nav-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            margin-top: 70px;
+            padding: 20px 0;
+        }
+        
+        .stories-container {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px 0;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .stories-wrapper {
+            display: flex;
+            gap: 16px;
+            padding: 0 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .stories-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .story-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            min-width: 66px;
+            transition: transform 0.2s;
+        }
+        
+        .story-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .story-avatar {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff006b, #0095f6);
+            padding: 2px;
+            margin-bottom: 8px;
+        }
+        
+        .story-avatar.viewed {
+            background: #e5e5e5;
+        }
+        
+        .story-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            object-fit: cover;
+        }
+        
+        .story-username {
+            font-size: 12px;
+            color: #262626;
+            text-align: center;
+            max-width: 66px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .feed-container {
+            max-width: 470px;
+            margin: 0 auto;
+        }
+        
+        .post-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+        
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .post-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .post-user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .post-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .post-time {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+        
+        .post-options {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .post-options:hover {
+            background: #f5f5f5;
+        }
+        
+        .post-image-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%; /* 1:1 aspect ratio */
+            overflow: hidden;
+        }
+        
+        .post-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px 8px;
+        }
+        
+        .post-actions-left {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            background: #f5f5f5;
+        }
+        
+        .heart-icon {
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+        
+        .heart-icon.liked {
+            filter: sepia(1) saturate(5) hue-rotate(300deg);
+        }
+        
+        .comment-icon, .share-icon, .save-icon {
+            font-size: 24px;
+        }
+        
+        .save-icon.saved {
+            filter: sepia(1) saturate(5) hue-rotate(200deg);
+        }
+        
+        .post-info {
+            padding: 0 16px 16px;
+        }
+        
+        .likes-count {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .post-caption {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .comments-count {
+            font-size: 14px;
+            color: #8e8e8e;
+            cursor: pointer;
+        }
+        
+        .comments-count:hover {
+            text-decoration: underline;
+        }
+        
+        .big-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 20px;
+            top: 90px;
+            width: 320px;
+        }
+        
+        .sidebar-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .sidebar-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #262626;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        
+        .suggestion-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .suggestion-info {
+            flex: 1;
+        }
+        
+        .suggestion-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .suggestion-meta {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+        
+        .follow-button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .follow-button:hover {
+            background: #e3f2fd;
+        }
+        
+        .follow-button.following {
+            color: #262626;
+            background: #efefef;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e5e5e5;
+            padding: 12px 0;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .bottom-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #262626;
+            font-size: 12px;
+        }
+        
+        .bottom-nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #262626;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .comments-modal {
+            width: 400px;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .modal-header h3 {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8e8e8e;
+        }
+        
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            max-height: 400px;
+        }
+        
+        .comment {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .comment-content {
+            flex: 1;
+        }
+        
+        .comment-user {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .comment-text {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        .comment-time {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+        
+        .add-comment {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .comment-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            padding: 8px 0;
+        }
+        
+        .post-comment-btn {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .post-comment-btn:hover {
+            background: #e3f2fd;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 0 80px;
+            }
+            
+            .feed-container {
+                padding: 0 16px;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .bottom-nav {
+                display: block;
+            }
+            
+            .search-input {
+                width: 180px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .post-image-container {
+                padding-bottom: 100%;
+            }
+            
+            .comments-modal {
+                width: 100%;
+                height: 100%;
+                max-height: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="logo">SnapShare</div>
+            
+            <div class="hidden md:block">
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-icon">💬</div>
+                <div class="nav-icon">➕</div>
+                <div class="nav-icon">🧭</div>
+                <img src="/resources/images/avatars/avatar1.png" alt="Profile" class="w-8 h-8 rounded-full cursor-pointer">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex gap-8">
+                <!-- Feed -->
+                <div class="flex-1">
+                    <!-- Stories -->
+                    <div class="stories-container">
+                        <div class="stories-wrapper">
+                            <div class="story-item">
+                                <div class="story-avatar">
+                                    <div class="story-image bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">+</div>
+                                </div>
+                                <span class="story-username">Your Story</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feed Container -->
+                    <div class="feed-container">
+                        <!-- Posts will be loaded here by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <!-- User Card -->
+                    <div class="sidebar-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="/resources/images/avatars/avatar1.png" alt="Alex Chen" class="w-12 h-12 rounded-full">
+                            <div>
+                                <div class="font-semibold">alex_photography</div>
+                                <div class="text-sm text-gray-500">Alex Chen</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between text-sm">
+                            <div class="text-center">
+                                <div class="font-semibold">234</div>
+                                <div class="text-gray-500">posts</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold">1.2K</div>
+                                <div class="text-gray-500">followers</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold">890</div>
+                                <div class="text-gray-500">following</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Suggestions -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-title">Suggestions For You</div>
+                        
+                        <div class="space-y-3">
+                            <div class="suggestion-item">
+                                <img src="/resources/images/avatars/avatar2.png" alt="Mike Johnson" class="suggestion-avatar">
+                                <div class="suggestion-info">
+                                    <div class="suggestion-username">mike_travels</div>
+                                    <div class="suggestion-meta">Followed by 3 friends</div>
+                                </div>
+                                <button class="follow-button" data-user-id="2">Follow</button>
+                            </div>
+                            
+                            <div class="suggestion-item">
+                                <img src="/resources/images/avatars/avatar3.png" alt="Sarah Kim" class="suggestion-avatar">
+                                <div class="suggestion-info">
+                                    <div class="suggestion-username">sarah_creates</div>
+                                    <div class="suggestion-meta">New to Instagram</div>
+                                </div>
+                                <button class="follow-button" data-user-id="3">Follow</button>
+                            </div>
+                            
+                            <div class="suggestion-item">
+                                <img src="/resources/images/avatars/avatar4.png" alt="Jay Williams" class="suggestion-avatar">
+                                <div class="suggestion-info">
+                                    <div class="suggestion-username">jay_street</div>
+                                    <div class="suggestion-meta">Follows you</div>
+                                </div>
+                                <button class="follow-button" data-user-id="4">Follow</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="#" class="text-sm text-blue-500 hover:underline">See All Suggestions</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Trending -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-title">Trending Topics</div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">#photography</span>
+                                <span class="text-gray-400">2.1M posts</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">#travel</span>
+                                <span class="text-gray-400">1.8M posts</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">#architecture</span>
+                                <span class="text-gray-400">956K posts</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">#lifestyle</span>
+                                <span class="text-gray-400">789K posts</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="index.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🏠</div>
+                <span>Home</span>
+            </a>
+            <a href="messages.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">💬</div>
+                <span>Messages</span>
+            </a>
+            <a href="upload.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">➕</div>
+                <span>Create</span>
+            </a>
+            <a href="profile.html" class="bottom-nav-item">
+                <div class="bottom-nav-icon">👤</div>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+    
+    <script>
+        // Дополнительная инициализация для главной страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Добавляем истории
+            const storiesWrapper = document.querySelector('.stories-wrapper');
+            if (storiesWrapper && window.stories) {
+                const existingContent = storiesWrapper.innerHTML;
+                const storiesHTML = window.stories.map(story => `
+                    <div class="story-item ${story.viewed ? 'viewed' : ''}" data-story-id="${story.id}">
+                        <div class="story-avatar ${story.viewed ? 'viewed' : ''}">
+                            <img src="${story.avatar}" alt="${story.username}" class="story-image">
+                        </div>
+                        <span class="story-username">${story.username}</span>
+                    </div>
+                `).join('');
+                
+                storiesWrapper.innerHTML = existingContent + storiesHTML;
+            }
+        });
+    </script>
+</body>
+</html>
